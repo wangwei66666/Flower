@@ -1,19 +1,35 @@
-plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
+if (isModule.toBoolean()) {
+    apply from: rootProject.file('library.gradle')
+} else {
+    apply plugin: 'com.android.application'
 }
+apply plugin: 'kotlin-android'
+//plugins {
+//    id 'kotlin-android'
+//}
+
+//赋值与引用
+def androidId = rootProject.ext.android
+def appId = rootProject.ext.appId
+
+def andx = rootProject.ext.androidx
+def google = rootProject.ext.google
+def test = rootProject.ext.test
+def a_test = rootProject.ext.android_test
 
 android {
-    compileSdkVersion 29
-
+    compileSdkVersion androidId.compileSdkVersion
     defaultConfig {
-        applicationId "com.ww.flower"
-        minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        if (!isModule.toBoolean()) {
+            applicationId appId.appId
+        }
+        minSdkVersion androidId.minSdkVersion
+        targetSdkVersion androidId.targetSdkVersion
+        versionCode androidId.versionCode
+        versionName androidId.versionName
+        testInstrumentationRunner androidId.testInstrumentationRunner
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -30,19 +46,206 @@ android {
         jvmTarget = '1.8'
     }
 
-    dataBinding{
+    dataBinding {
         enabled true
+    }
+
+    publishNonDefault true
+    flavorDimensions "env", "role"
+    productFlavors {
+        // 测试环境
+        daily {
+            dimension "env"
+            buildConfigField('boolean', 'xxx', 'true')
+            buildConfigField('String', 'xxx', '"default"')
+            manifestPlaceholders = [
+                    xxx: "xxx",
+            ]
+        }
+        // 预发布环境
+        preview {
+            dimension "env"
+            buildConfigField('boolean', 'DEV_DEBUG', 'false')
+            buildConfigField('String', 'DEV_CHANNEL', '"default"')
+            manifestPlaceholders = [
+                    xxx: "xxx",
+            ]
+        }
+        // 生产环境
+        online {
+            dimension "env"
+            buildConfigField('boolean', 'DEV_DEBUG', 'false')
+            buildConfigField('String', 'DEV_CHANNEL', '"Default"')
+            manifestPlaceholders = [
+                    xxx: "xxx",
+            ]
+        }
+
+        flower {
+            dimension "role"
+            if (!isModule.toBoolean()) {
+                applicationId appId.appId
+//                applicationId "com.ww.flower"
+            }
+            //配置矢量图的参数
+            vectorDrawables {
+                //如果 minSdkVersion 小于 21，只生成mdpi的png
+                generatedDensities 'mdpi'
+                //设置为 true，会忽略 generatedDensities ，会加入svg兼容包，不会再产生png
+                useSupportLibrary true
+            }
+            //公共参数
+            buildConfigField('String', 'xxx', '"xxx"')
+
+            //不同风味的差异化配置
+            manifestPlaceholders = [app_icon    : "@mipmap/ic_launcher",
+//                                    app_id        : "com.ww.flower",
+                                    app_id      : appId.appId,
+                                    app_name    : "Flower",
+                                    desktop_name: "Flower",
+            ]
+            //忽略在 Library 中的渠道设置
+            missingDimensionStrategy 'env', 'daily', 'preview', 'online'
+            missingDimensionStrategy 'role', 'flower'
+        }
+    }
+
+    signingConfigs {
+        // 配置签名
+        def keystorePropertiesFile = rootProject.file("app/keystore.properties")
+        def keystoreProperties = new Properties()
+        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+        debug {
+            println("======== debug mode: set key ========")
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            v2SigningEnabled true
+            v1SigningEnabled true
+        }
+        release {
+            println("======== release mode: set key ========")
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            v2SigningEnabled true
+            v1SigningEnabled true
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+            //混淆
+//            minifyEnabled true
+            //压缩资源
+//            shrinkResources true
+            //是否开启zipAlign。会对应用程序进行字节对齐，对齐后会减少了运行应用程序时消耗的内存。
+//            zipAlignEnabled true
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        release {
+            signingConfig signingConfigs.release
+            //混淆
+//            minifyEnabled true
+            //压缩资源
+//            shrinkResources true
+            //是否开启zipAlign。会对应用程序进行字节对齐，对齐后会减少了运行应用程序时消耗的内存。
+//            zipAlignEnabled true
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    variantFilter { variant ->
+        if (variant.buildType.name == 'release') {
+            variant.setIgnore(variant.getFlavors().get(0).name != 'online');
+        }
+        if (variant.buildType.name == 'debug') {
+
+        }
+    }
+
+    if (!isModule.toBoolean()) {
+        android.applicationVariants.all { variant ->
+
+            if (project.hasProperty('vn')) {
+                variant.mergedFlavor.versionName = vn
+            }
+
+            if (project.hasProperty('vc')) {
+                variant.mergedFlavor.versionCode = vc.toInteger()
+            }
+
+            def maps = [:];
+            buildConfigXml(maps);
+
+            if (variant.flavorName.contains("daily")) {
+                def name = variant.mergedFlavor.manifestPlaceholders["app_name"]
+                variant.mergedFlavor.manifestPlaceholders["app_name"] = "测试_" + name
+                variant.mergedFlavor.manifestPlaceholders["desktop_name"] = "测试" + releaseTime()
+            } else if (variant.flavorName.contains("preview")) {
+                def name = variant.mergedFlavor.manifestPlaceholders["app_name"]
+                variant.mergedFlavor.manifestPlaceholders["app_name"] = "预发布_" + name
+                variant.mergedFlavor.manifestPlaceholders["desktop_name"] = "预发布_" + releaseTime()
+            }
+
+            variant.outputs.all {
+                def releaseApkName = "${variant.flavorName}-${variant.mergedFlavor.versionName}-${variant.mergedFlavor.versionCode}-${variant.buildType.name}.apk"
+                outputFileName = releaseApkName
+            }
+        }
     }
 }
 
+def releaseTime() {
+    return new Date().format("MM-dd", TimeZone.getTimeZone("UTC"))
+}
+
+def buildConfigXml(maps) {
+    if (maps.size() < 1) {
+        return;
+    }
+    def configXml = new XmlParser().parse(path)
+    maps.each { entity ->
+        def nodes = configXml.findAll { it.@name == entity.key }
+        if (nodes != null && nodes.size() > 0) {
+            nodes.get(0).value = entity.value.toString().trim()
+        }
+    }
+    new XmlNodePrinter(new PrintWriter(path)).print(configXml)
+}
+
+
 dependencies {
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.2'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.3.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+//    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+//    implementation 'androidx.core:core-ktx:1.3.2'
+//    implementation 'androidx.appcompat:appcompat:1.2.0'
+//    implementation 'com.google.android.material:material:1.3.0'
+//    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+//    testImplementation 'junit:junit:4.+'
+//    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+//    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    api fileTree(include: ['*.aar', '*.jar'], dir: 'libs')
+
+    //androidx相关依赖
+    andx.each { k, v ->
+        api v
+    }
+
+    google.each { k, v ->
+        api v
+    }
+
+    test.each { k, v ->
+        testImplementation v
+    }
+
+    a_test.each { k, v ->
+        androidTestImplementation v
+    }
+
 }
