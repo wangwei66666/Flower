@@ -258,4 +258,5 @@ dependencies {
         androidTestImplementation v
     }
 
+    implementation project(':lib_common')
 }

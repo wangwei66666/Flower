@@ -32,19 +32,19 @@ kapt {
 
 dependencies {
     //androidx相关依赖
-    andx.each { k, v ->
-        api v
-    }
-
-    google.each { k, v ->
-        api v
-    }
-
-    test.each { k, v ->
-        testImplementation v
-    }
-
-    a_test.each { k, v ->
-        androidTestImplementation v
-    }
+//    andx.each { k, v ->
+//        api v
+//    }
+//
+//    google.each { k, v ->
+//        api v
+//    }
+//
+//    test.each { k, v ->
+//        testImplementation v
+//    }
+//
+//    a_test.each { k, v ->
+//        androidTestImplementation v
+//    }
 }
