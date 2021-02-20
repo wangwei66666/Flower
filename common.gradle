@@ -1,0 +1,50 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+def androidId = rootProject.ext.android
+
+def andx = rootProject.ext.androidx
+def google = rootProject.ext.google
+def test = rootProject.ext.test
+def a_test = rootProject.ext.android_test
+
+android {
+    compileSdkVersion androidId.compileSdkVersion
+
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+}
+
+java {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+}
+
+kapt {
+    arguments {
+        arg("AROUTER_MODULE_NAME", project.getName())
+    }
+}
+
+dependencies {
+    //androidx相关依赖
+    andx.each { k, v ->
+        api v
+    }
+
+    google.each { k, v ->
+        api v
+    }
+
+    test.each { k, v ->
+        testImplementation v
+    }
+
+    a_test.each { k, v ->
+        androidTestImplementation v
+    }
+}
