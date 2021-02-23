@@ -9,9 +9,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Flower">
+        <provider
+            android:authorities="${app_id}.contextprovider"
+            android:name="com.ww.lib_common.app.ContextProvider"
+            android:exported="false"/>
         <activity
             android:name=".ui.activities.MainActivity"
-            android:label="@string/title_activity_main"></activity>
+            android:label="@string/title_activity_main"/>
         <activity
             android:name=".ui.activities.SplashActivity"
             android:label="${desktop_name}">

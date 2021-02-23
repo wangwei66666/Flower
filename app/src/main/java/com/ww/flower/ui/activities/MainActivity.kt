@@ -1,5 +1,6 @@
 package com.ww.flower.ui.activities
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -10,6 +11,8 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.ww.flower.R
 import com.ww.lib_common.AppGlobals
+
+//import com.ww.lib_common.app.ContextProvider.Companion.context
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+//        Toast.makeText(context(),"=====" , Toast.LENGTH_LONG).show()
         Toast.makeText(AppGlobals.getApplication(),"=====" , Toast.LENGTH_LONG).show()
     }
 }
