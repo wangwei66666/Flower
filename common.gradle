@@ -47,4 +47,5 @@ dependencies {
 //    a_test.each { k, v ->
 //        androidTestImplementation v
 //    }
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }

@@ -1,5 +1,5 @@
 apply from: rootProject.file('common.gradle')
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+//    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
