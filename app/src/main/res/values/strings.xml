@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Flower</string>
-    <string name="title_activity_main">MainActivity</string>
-    <string name="title_home">首页</string>
-    <string name="title_dashboard">仪表盘</string>
-    <string name="title_notifications">通知</string>
+    <string name="app_name" translatable="false">Flower</string>
+    <string name="title_activity_main" translatable="false">MainActivity</string>
+    <string name="title_home" translatable="false">首页</string>
+    <string name="title_dashboard" translatable="false">仪表盘</string>
+    <string name="title_notifications" translatable="false">通知</string>
 </resources>
